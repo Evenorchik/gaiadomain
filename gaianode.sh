@@ -55,7 +55,7 @@ case $choice in
         echo -e "${CYAN}[4/6] -> Setting PATH...${NC}"
         echo "export PATH=\$PATH:$HOME/gaianet/bin" >> "$HOME/.bashrc"
         export PATH="$PATH:$HOME/gaianet/bin"
-        # Load PATH right now so 'gaianet' is available immediately
+        # Load PATH immediately in this script
         source "$HOME/.bashrc"
         sleep 2
 
@@ -69,6 +69,14 @@ case $choice in
 
         echo -e "${CYAN}[6/6] -> Starting node...${NC}"
         gaianet start
+
+        # Create symlink for immediate access in all sessions
+        echo -e "${CYAN}Linking gaianet to /usr/local/bin for immediate access...${NC}"
+        sudo ln -sf "$HOME/gaianet/bin/gaianet" /usr/local/bin/gaianet
+
+        # Show node info right away
+        echo -e "\n${CYAN}Gaia node info:${NC}"
+        gaianet info
 
         echo -e "\n${CYAN}Gaia node installed and started successfully!${NC}\n"
         ;;
@@ -122,7 +130,7 @@ Group=$USERNAME
 WorkingDirectory=$BOT_DIR
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=multi-user-target
 EOF"
 
         echo -e "${CYAN}[5/5] -> Enabling and starting service...${NC}"
