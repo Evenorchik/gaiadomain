@@ -130,7 +130,7 @@ Group=$USERNAME
 WorkingDirectory=$BOT_DIR
 
 [Install]
-WantedBy=multi-user-target
+WantedBy=multi-user.target
 EOF"
 
         echo -e "${CYAN}[5/5] -> Enabling and starting service...${NC}"
