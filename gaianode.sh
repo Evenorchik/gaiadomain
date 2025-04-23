@@ -10,7 +10,7 @@ clear
 # Check if curl is installed and install if missing
 if ! command -v curl &> /dev/null; then
     sudo apt update
-    sudo apt install curl -y
+    sudo apt install -y curl
 fi
 
 # Display logo
@@ -38,6 +38,7 @@ read -p "-> " choice
 case $choice in
     1)
         echo -e "\n${CYAN}Installing Gaia node...${NC}\n"
+
         echo -e "${CYAN}[1/6] -> Updating system...${NC}"
         sudo apt update && sudo apt upgrade -y
         sudo apt install -y python3-pip python3-dev python3-venv curl git build-essential
@@ -54,11 +55,12 @@ case $choice in
         echo -e "${CYAN}[4/6] -> Setting PATH...${NC}"
         echo "export PATH=\$PATH:$HOME/gaianet/bin" >> "$HOME/.bashrc"
         export PATH="$PATH:$HOME/gaianet/bin"
-        source ~/.bashrc
+        # Load PATH right now so 'gaianet' is available immediately
+        source "$HOME/.bashrc"
         sleep 2
 
         if ! command -v gaianet &> /dev/null; then
-            echo -e "${CYAN}Error: gaianet not found!$NC"
+            echo -e "${CYAN}Error: gaianet not found!${NC}"
             exit 1
         fi
 
@@ -74,6 +76,11 @@ case $choice in
     2)
         echo -e "\n${CYAN}Installing and starting farming script (Gaia bot)...${NC}\n"
 
+        echo -e "${CYAN}Installing prerequisites...${NC}"
+        sudo apt update
+        sudo apt install -y git python3-pip
+        pip3 install --user aiohttp
+
         echo -e "${CYAN}[1/5] -> Preparing directory...${NC}"
         BOT_DIR="$HOME/gaiabot"
         mkdir -p "$BOT_DIR"
@@ -83,12 +90,16 @@ case $choice in
         if [ -d ".git" ]; then
             git pull
         else
-            git clone https://github.com/Evenorchik/gaiadomain.git . 
+            git clone https://github.com/Evenorchik/gaiadomain.git .
         fi
 
         echo -e "${CYAN}[3/5] -> Configuring environment variables...${NC}"
         read -p "Enter your domain (e.g. mydomain.gaia.domains): " DOMAIN
         read -p "Enter your API key: " API_KEY
+        if [ -z "$DOMAIN" ] || [ -z "$API_KEY" ]; then
+            echo -e "${CYAN}Error: DOMAIN and API_KEY cannot be empty.${NC}"
+            exit 1
+        fi
         cat > env <<EOF
 DOMAIN=$DOMAIN
 API_KEY=$API_KEY
@@ -120,7 +131,7 @@ EOF"
         sudo systemctl start gaiabot.service
 
         echo -e "\n${CYAN}Gaia bot service started successfully!${NC}"
-        echo -e "${CYAN}To view logs:${NC} sudo journalctl -u gaiabot -f\n"
+        echo -e "${CYAN}To view logs:${NC} sudo journalctl -u gaiabot.service -f\n"
         ;;
 
     3)
@@ -143,7 +154,7 @@ EOF"
 
     6)
         echo -e "\n${CYAN}Tailing Gaia bot logs...${NC}\n"
-        sudo journalctl -u gaiabot -f
+        sudo journalctl -u gaiabot.service -f
         ;;
 
     7)
